@@ -205,8 +205,7 @@ class Executor:
         elif is_artifact(annotation_type):
             if isinstance(return_value, artifact_types.Artifact):
                 # for -> Artifact annotations, where the user returns an artifact
-                artifact_name = self.executor_input['outputs']['artifacts'][
-                    output_name]['artifacts'][0]['name']
+                artifact_name = ''
                 # users should not override the name for Vertex Pipelines
                 # if empty string, replace
                 # else provide descriptive warning and prefer letting backend throw exception
