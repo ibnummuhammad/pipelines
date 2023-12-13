@@ -45,3 +45,23 @@ client.create_run_from_pipeline_func(
     })
 
 ```
+
+## Build kfp image
+
+* To build wheel file, run:
+
+```sh
+python setup.py bdist_wheel
+```
+
+* To build docker image (below are example comamnd), run:
+
+```sh
+docker build . -t ibnummuhammad/python:3.11.7-alpine3.18.12
+```
+
+* To push docker image (below are example comamnd), run:
+
+```sh
+docker push ibnummuhammad/python:3.11.7-alpine3.18.12
+```
