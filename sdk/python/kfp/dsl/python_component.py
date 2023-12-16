@@ -33,9 +33,11 @@ class PythonComponent(base_component.BaseComponent):
         self,
         component_spec: structures.ComponentSpec,
         python_func: Callable,
+        outputs: tuple,
     ):
         super().__init__(component_spec=component_spec)
         self.python_func = python_func
+        self.outputs: tuple = outputs
 
         self._prevent_using_output_lists_of_artifacts()
 

@@ -97,10 +97,24 @@ class BaseComponent(abc.ABC):
                 f'{self.name}() missing {len(missing_arguments)} required '
                 f'{argument_or_arguments}: {arguments}.')
 
-        return pipeline_task.PipelineTask(
-            component_spec=self.component_spec,
-            args=task_inputs,
-        )
+        if self.outputs:
+            task = pipeline_task.PipelineTask(
+                component_spec=self.component_spec,
+                args=task_inputs,
+            )
+            if isinstance(self.outputs, tuple):
+                task_ = []
+                for output in self.outputs:
+                    task_.append(task.outputs[output])
+                task_ = tuple(task_)
+            else:
+                task_ = task.output
+            return task_
+        else:
+            return pipeline_task.PipelineTask(
+                component_spec=self.component_spec,
+                args=task_inputs,
+            )
 
     @property
     def pipeline_spec(self) -> pipeline_spec_pb2.PipelineSpec:
