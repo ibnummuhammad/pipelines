@@ -40,12 +40,15 @@ class Executor:
             self.func = function_to_execute
 
         self.executor_input = executor_input
-        output_artifact_key = list(self.executor_input["outputs"]["artifacts"].keys())[
-            0
-        ]
-        self.executor_output_path = self.executor_input["outputs"]["artifacts"][
-            output_artifact_key
-        ]["artifacts"][0]["uri"]
+        if self.executor_input["outputs"].get("artifacts"):
+            output_artifact_key = list(
+                self.executor_input["outputs"]["artifacts"].keys()
+            )[0]
+            self.executor_output_path = self.executor_input["outputs"]["artifacts"][
+                output_artifact_key
+            ]["artifacts"][0]["uri"]
+        else:
+            self.executor_output_path = self.executor_input["outputs"]["outputFile"]
 
         # drop executor_output.json part from the outputFile path
         artifact_types.CONTAINER_TASK_ROOT = os.path.split(
