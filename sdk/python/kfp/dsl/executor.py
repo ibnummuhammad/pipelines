@@ -314,6 +314,8 @@ class Executor:
         Returns:
             Optional[str]: Returns the location of the executor_output file as a string if the file is written. Else, None.
         """
+        from kfp.dsl import Dataset
+
         annotations = inspect.getfullargspec(self.func).annotations
 
         # Function arguments.
@@ -364,6 +366,14 @@ class Executor:
 
             elif isinstance(v, type_annotations.InputPath):
                 func_kwargs[k] = self.get_input_artifact_path(k)
+
+        for kwarg in func_kwargs.keys():
+            if type(func_kwargs[kwarg]) == Dataset:
+                import pandas as pd
+
+                func_kwargs[kwarg] = pd.read_csv(
+                    func_kwargs[kwarg].path
+                )
 
         result = self.func(**func_kwargs)
         return self.write_executor_output(result)
