@@ -375,24 +375,26 @@ class Executor:
 
         result = self.func(**func_kwargs)
 
-        outputs_artifacts = list(
-            self.executor_input["outputs"]["artifacts"].keys()
-        )
+        if self.executor_input["outputs"].get("artifacts"):
+            outputs_artifacts = list(
+                self.executor_input["outputs"]["artifacts"].keys()
+            )
 
-        output_list = []
-        for output_i, output_value in enumerate(result):
-            output_value.to_csv(
-                f"/tmp/{outputs_artifacts[output_i]}.csv", index=False
-            )
-            output_dataset = Dataset(
-                uri=dsl.get_uri(outputs_artifacts[output_i])
-            )
-            os.rename(
-                f"/tmp/{outputs_artifacts[output_i]}.csv", output_dataset.path
-            )
-            output_list.append(output_dataset)
+            output_list = []
+            for output_i, output_value in enumerate(result):
+                output_value.to_csv(
+                    f"/tmp/{outputs_artifacts[output_i]}.csv", index=False
+                )
+                output_dataset = Dataset(
+                    uri=dsl.get_uri(outputs_artifacts[output_i])
+                )
+                os.rename(
+                    f"/tmp/{outputs_artifacts[output_i]}.csv",
+                    output_dataset.path,
+                )
+                output_list.append(output_dataset)
 
-        result = tuple(output_list)
+            result = tuple(output_list)
 
         return self.write_executor_output(result)
 
