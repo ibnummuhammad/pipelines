@@ -106,7 +106,10 @@ class BaseComponent(abc.ABC):
                 task_ = []
                 for output in self.outputs:
                     task_.append(task.outputs[output])
-                task_ = tuple(task_)
+                if len(task_) > 1:
+                    task_ = tuple(task_)
+                else:
+                    task_ = task_[0]
             else:
                 task_ = task.output
             return task_
