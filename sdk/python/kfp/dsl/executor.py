@@ -62,6 +62,8 @@ class Executor:
         self.return_annotation = inspect.signature(self.func).return_annotation
         self.excutor_output = {}
 
+        self.result_list = []
+
     def assign_input_and_output_artifacts(self) -> None:
         for name, artifacts in self.executor_input.get('inputs',
                                                        {}).get('artifacts',
@@ -315,6 +317,22 @@ class Executor:
             Optional[str]: Returns the location of the executor_output file as a string if the file is written. Else, None.
         """
         from kfp.dsl import Dataset  # pylint: disable=C0415
+        from pandas import DataFrame  # pylint: disable=C0415
+
+        def convert_dataset_to_dataframe(
+            output_value: DataFrame, output_i: int = 0
+        ):
+            output_value.to_csv(
+                f"/tmp/{outputs_artifacts[output_i]}.csv", index=False
+            )
+            output_dataset = Dataset(
+                uri=dsl.get_uri(outputs_artifacts[output_i])
+            )
+            os.rename(
+                f"/tmp/{outputs_artifacts[output_i]}.csv",
+                output_dataset.path,
+            )
+            self.result_list.append(output_dataset)
 
         annotations = inspect.getfullargspec(self.func).annotations
 
@@ -380,21 +398,15 @@ class Executor:
                 self.executor_input["outputs"]["artifacts"].keys()
             )
 
-            output_list = []
-            for output_i, output_value in enumerate(result):
-                output_value.to_csv(
-                    f"/tmp/{outputs_artifacts[output_i]}.csv", index=False
-                )
-                output_dataset = Dataset(
-                    uri=dsl.get_uri(outputs_artifacts[output_i])
-                )
-                os.rename(
-                    f"/tmp/{outputs_artifacts[output_i]}.csv",
-                    output_dataset.path,
-                )
-                output_list.append(output_dataset)
+            if isinstance(result, tuple):
+                for output_i, output_value in enumerate(result):
+                    convert_dataset_to_dataframe(
+                        output_value=output_value, output_i=output_i
+                    )
+            else:
+                convert_dataset_to_dataframe(output_value=result)
 
-            result = tuple(output_list)
+            result = tuple(self.result_list)
 
         return self.write_executor_output(result)
 
