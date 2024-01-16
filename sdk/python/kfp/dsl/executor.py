@@ -260,19 +260,28 @@ class Executor:
                                                 self.return_annotation,
                                                 func_output)
             elif is_named_tuple(self.return_annotation):
-                if len(self.return_annotation._fields) != len(func_output):
-                    raise RuntimeError(
-                        f'Expected {len(self.return_annotation._fields)} return values from function `{self.func.__name__}`, got {len(func_output)}'
-                    )
-                for i in range(len(self.return_annotation._fields)):
-                    field = self.return_annotation._fields[i]
+                if len(self.return_annotation._fields) == 1 and not isinstance(
+                    func_output, tuple
+                ):
+                    field = self.return_annotation._fields[0]
                     field_type = self.return_annotation.__annotations__[field]
-                    if type(func_output) == tuple:
-                        field_value = func_output[i]
-                    else:
-                        field_value = getattr(func_output, field)
-                    self.handle_single_return_value(field, field_type,
-                                                    field_value)
+                    self.handle_single_return_value(
+                        field, field_type, func_output
+                    )
+                else:
+                    if len(self.return_annotation._fields) != len(func_output):
+                        raise RuntimeError(
+                            f'Expected {len(self.return_annotation._fields)} return values from function `{self.func.__name__}`, got {len(func_output)}'
+                        )
+                    for i in range(len(self.return_annotation._fields)):
+                        field = self.return_annotation._fields[i]
+                        field_type = self.return_annotation.__annotations__[field]
+                        if type(func_output) == tuple:
+                            field_value = func_output[i]
+                        else:
+                            field_value = getattr(func_output, field)
+                        self.handle_single_return_value(field, field_type,
+                                                        field_value)
             else:
                 raise RuntimeError(
                     f'Unknown return type: {self.return_annotation}. Must be one of `str`, `int`, `float`, a subclass of `Artifact`, or a NamedTuple collection of these types.'
