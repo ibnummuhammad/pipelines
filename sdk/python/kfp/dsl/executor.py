@@ -63,6 +63,7 @@ class Executor:
         self.excutor_output = {}
 
         self.result_list = []
+        self.result_list_v2 = []
 
     def assign_input_and_output_artifacts(self) -> None:
         for name, artifacts in self.executor_input.get('inputs',
@@ -328,20 +329,13 @@ class Executor:
         from kfp.dsl import Dataset  # pylint: disable=C0415
         from pandas import DataFrame  # pylint: disable=C0415
 
-        def convert_dataset_to_dataframe(
-            output_value: DataFrame, output_i: int = 0
+        def convert_dataset_to_dataframe_v2(
+            output_name: str, output_value: DataFrame
         ):
-            output_value.to_csv(
-                f"/tmp/{outputs_artifacts[output_i]}.csv", index=False
-            )
-            output_dataset = Dataset(
-                uri=dsl.get_uri(outputs_artifacts[output_i])
-            )
-            os.rename(
-                f"/tmp/{outputs_artifacts[output_i]}.csv",
-                output_dataset.path,
-            )
-            self.result_list.append(output_dataset)
+            output_value.to_csv(f"/tmp/{output_name}.csv", index=False)
+            output_dataset = Dataset(uri=dsl.get_uri(output_name))
+            os.rename(f"/tmp/{output_name}.csv", output_dataset.path)
+            self.result_list_v2.append(output_dataset)
 
         annotations = inspect.getfullargspec(self.func).annotations
 
@@ -402,20 +396,56 @@ class Executor:
 
         result = self.func(**func_kwargs)
 
-        if self.executor_input["outputs"].get("artifacts"):
-            outputs_artifacts = list(
-                self.executor_input["outputs"]["artifacts"].keys()
-            )
+        print("result...")
+        print(result)
+        print("type(result)...")
+        print(type(result))
+        print('self.executor_input...')
+        print(self.executor_input)
+        print('self.executor_input["outputs"]...')
+        print(self.executor_input["outputs"])
+        print("self.return_annotation...")
+        print(self.return_annotation)
+        print("self.return_annotation._fields...")
+        print(self.return_annotation._fields)
+        print("self.return_annotation.__annotations__...")
+        print(self.return_annotation.__annotations__)
+        print("self.return_annotation.__annotations__.keys()...")
+        print(self.return_annotation.__annotations__.keys())
+        print("self.return_annotation.__annotations__.items()...")
+        print(self.return_annotation.__annotations__.items())
 
-            if isinstance(result, tuple):
-                for output_i, output_value in enumerate(result):
-                    convert_dataset_to_dataframe(
-                        output_value=output_value, output_i=output_i
-                    )
+        for output_i, output_name in enumerate(self.return_annotation.__annotations__):
+            output_type = self.return_annotation.__annotations__[output_name]
+            print("output_i...")
+            print(output_i)
+            print("output_name...")
+            print(output_name)
+            print("output_type...")
+            print(output_type)
+            print("type(output_type)...")
+            print(type(output_type))
+
+            if output_type != Dataset:
+                self.result_list_v2.append(result[output_i])
             else:
-                convert_dataset_to_dataframe(output_value=result)
+                if isinstance(result, tuple):
+                    convert_dataset_to_dataframe_v2(
+                        output_name=output_name,
+                        output_value=result[output_i],
+                    )
+                else:
+                    convert_dataset_to_dataframe_v2(
+                        output_name=output_name,
+                        output_value=result,
+                    )
 
-            result = tuple(self.result_list)
+            print(f"berhasil_{output_i}...")
+
+        print("self.result_list_v2...")
+        print(self.result_list_v2)
+
+        result = tuple(self.result_list_v2)
 
         return self.write_executor_output(result)
 
