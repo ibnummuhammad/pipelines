@@ -463,6 +463,10 @@ class Executor:
         print(self.return_annotation.__annotations__.keys())
         print("self.return_annotation.__annotations__.items()...")
         print(self.return_annotation.__annotations__.items())
+        print("self.return_annotation.__annotations__.values()...")
+        print(self.return_annotation.__annotations__.values())
+        print("list(self.return_annotation.__annotations__.values())...")
+        print(list(self.return_annotation.__annotations__.values()))
 
         for output_i, output_name in enumerate(self.return_annotation.__annotations__):
             output_type = self.return_annotation.__annotations__[output_name]
@@ -475,7 +479,9 @@ class Executor:
             print("type(output_type)...")
             print(type(output_type))
 
-            if output_type != Dataset:
+            if output_type != Dataset and len(list(self.return_annotation.__annotations__.values())) == 1:
+                self.result_list_v2.append(result)
+            elif output_type != Dataset:
                 self.result_list_v2.append(result[output_i])
             else:
                 if isinstance(result, tuple):
