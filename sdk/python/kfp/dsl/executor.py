@@ -39,20 +39,27 @@ class Executor:
         else:
             self.func = function_to_execute
 
+        self.executor_artifact_output_path = None
+
         self.executor_input = executor_input
         if self.executor_input["outputs"].get("artifacts"):
             output_artifact_key = list(
                 self.executor_input["outputs"]["artifacts"].keys()
             )[0]
-            self.executor_output_path = self.executor_input["outputs"]["artifacts"][
+            self.executor_artifact_output_path = self.executor_input["outputs"]["artifacts"][
                 output_artifact_key
             ]["artifacts"][0]["uri"]
-        else:
-            self.executor_output_path = self.executor_input["outputs"]["outputFile"]
+        self.executor_output_path = self.executor_input["outputs"]["outputFile"]
 
         # drop executor_output.json part from the outputFile path
-        artifact_types.CONTAINER_TASK_ROOT = os.path.split(
-            self.executor_output_path)[0]
+        if self.executor_artifact_output_path:
+            artifact_types.CONTAINER_TASK_ROOT = os.path.split(
+                self.executor_artifact_output_path)[0]
+        else:
+            artifact_types.CONTAINER_TASK_ROOT = os.path.split(
+                self.executor_output_path)[0]
+        print("artifact_types.CONTAINER_TASK_ROOT...")
+        print(artifact_types.CONTAINER_TASK_ROOT)
 
         self.input_artifacts: Dict[str, Union[dsl.Artifact,
                                               List[dsl.Artifact]]] = {}
@@ -198,7 +205,15 @@ class Executor:
 
     def handle_single_return_value(self, output_name: str, annotation_type: Any,
                                    return_value: Any) -> None:
+        print("masuk_handle_single_return_value...")
+        print("output_name...")
+        print(output_name)
+        print("return_value...")
+        print(return_value)
+        print("annotation_type...")
+        print(annotation_type)
         if is_parameter(annotation_type):
+            print("masuk_is_parameter...")
             origin_type = getattr(annotation_type, '__origin__',
                                   None) or annotation_type
             # relax float-typed return to allow both int and float.
@@ -211,10 +226,13 @@ class Executor:
                 raise ValueError(
                     f'Function `{self.func.__name__}` returned value of type {type(return_value)}; want type {origin_type}'
                 )
+            print("masuk_write_output_parameter_value...")
             self.write_output_parameter_value(output_name, return_value)
 
         elif is_artifact(annotation_type):
+            print("masuk_is_artifact...")
             if isinstance(return_value, artifact_types.Artifact):
+                print("masuk_is_artifact_isinstance...")
                 # for -> Artifact annotations, where the user returns an artifact
                 artifact_name = ''
                 # users should not override the name for Vertex Pipelines
@@ -231,7 +249,10 @@ class Executor:
                             RuntimeWarning,
                             stacklevel=2)
                 self.output_artifacts[output_name] = return_value
+                print("self.output_artifacts...")
+                print(self.output_artifacts)
             else:
+                print("masuk_is_artifact_else...")
                 # for -> Artifact annotations, where the user returns some data that the executor should serialize
                 self.write_output_artifact_payload(output_name, return_value)
         else:
@@ -254,33 +275,51 @@ class Executor:
         """
 
         if func_output is not None:
+            print("masuk func_output is not None...")
             if is_parameter(self.return_annotation) or is_artifact(
                     self.return_annotation):
+                print("masuk is_parameter() | is_artifact()...")
                 # Note: single output is named `Output` in component.yaml.
+                print("is_parameter_self.return_annotation...")
+                print(self.return_annotation)
                 self.handle_single_return_value('Output',
                                                 self.return_annotation,
                                                 func_output)
             elif is_named_tuple(self.return_annotation):
+                print("masuk_is_named_tuple()...")
                 if len(self.return_annotation._fields) == 1 and not isinstance(
                     func_output, tuple
                 ):
+                    print("masuk_len(self.return_annotation._fields) == 1...")
                     field = self.return_annotation._fields[0]
                     field_type = self.return_annotation.__annotations__[field]
                     self.handle_single_return_value(
                         field, field_type, func_output
                     )
                 else:
+                    print("masuk_else...")
                     if len(self.return_annotation._fields) != len(func_output):
                         raise RuntimeError(
                             f'Expected {len(self.return_annotation._fields)} return values from function `{self.func.__name__}`, got {len(func_output)}'
                         )
                     for i in range(len(self.return_annotation._fields)):
+                        print("i...")
+                        print(i)
                         field = self.return_annotation._fields[i]
+                        print("field...")
+                        print(field)
                         field_type = self.return_annotation.__annotations__[field]
+                        print("field_type...")
+                        print(field_type)
                         if type(func_output) == tuple:
+                            print("akhir_masuk_if...")
                             field_value = func_output[i]
+                            print("field_value...")
+                            print(field_value)
                         else:
                             field_value = getattr(func_output, field)
+                            print("field_value...")
+                            print(field_value)
                         self.handle_single_return_value(field, field_type,
                                                         field_value)
             else:
@@ -310,6 +349,16 @@ class Executor:
             cluster_spec = json.loads(cluster_spec_string)
             CHIEF_NODE_LABELS = {'workerpool0', 'chief', 'master'}
             write_file = cluster_spec['task']['type'] in CHIEF_NODE_LABELS
+
+        print("write_file...")
+        print(write_file)
+        print("self.executor_output_path...")
+        print(self.executor_output_path)
+        if self.executor_artifact_output_path:
+            print("self.executor_artifact_output_path...")
+            print(self.executor_artifact_output_path)
+        print("self.excutor_output...")
+        print(self.excutor_output)
 
         if write_file:
             makedirs_recursively(self.executor_output_path)
@@ -406,8 +455,8 @@ class Executor:
         print(self.executor_input["outputs"])
         print("self.return_annotation...")
         print(self.return_annotation)
-        print("self.return_annotation._fields...")
-        print(self.return_annotation._fields)
+        # print("self.return_annotation._fields...")
+        # print(self.return_annotation._fields)
         print("self.return_annotation.__annotations__...")
         print(self.return_annotation.__annotations__)
         print("self.return_annotation.__annotations__.keys()...")
