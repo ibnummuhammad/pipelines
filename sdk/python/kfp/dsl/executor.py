@@ -68,7 +68,6 @@ class Executor:
         self.excutor_output = {}
 
         self.result_list = []
-        self.result_list_v2 = []
 
     def assign_input_and_output_artifacts(self) -> None:
         for name, artifacts in self.executor_input.get('inputs',
@@ -334,13 +333,13 @@ class Executor:
         from kfp.dsl import Dataset  # pylint: disable=C0415
         from pandas import DataFrame  # pylint: disable=C0415
 
-        def convert_dataset_to_dataframe_v2(
+        def convert_dataset_to_dataframe(
             output_name: str, output_value: DataFrame
         ):
             output_value.to_csv(f"/tmp/{output_name}.csv", index=False)
             output_dataset = Dataset(uri=dsl.get_uri(output_name))
             os.rename(f"/tmp/{output_name}.csv", output_dataset.path)
-            self.result_list_v2.append(output_dataset)
+            self.result_list.append(output_dataset)
 
         annotations = inspect.getfullargspec(self.func).annotations
 
@@ -405,22 +404,22 @@ class Executor:
             output_type = self.return_annotation.__annotations__[output_name]
 
             if output_type != Dataset and len(list(self.return_annotation.__annotations__.values())) == 1:
-                self.result_list_v2.append(result)
+                self.result_list.append(result)
             elif output_type != Dataset:
-                self.result_list_v2.append(result[output_i])
+                self.result_list.append(result[output_i])
             else:
                 if isinstance(result, tuple):
-                    convert_dataset_to_dataframe_v2(
+                    convert_dataset_to_dataframe(
                         output_name=output_name,
                         output_value=result[output_i],
                     )
                 else:
-                    convert_dataset_to_dataframe_v2(
+                    convert_dataset_to_dataframe(
                         output_name=output_name,
                         output_value=result,
                     )
 
-        result = tuple(self.result_list_v2)
+        result = tuple(self.result_list)
 
         return self.write_executor_output(result)
 
