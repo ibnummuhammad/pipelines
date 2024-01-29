@@ -419,7 +419,10 @@ class Executor:
                         output_value=result,
                     )
 
-        result = tuple(self.result_list)
+        if self.executor_input["outputs"].get("artifacts"):
+            result = tuple(self.result_list)
+        else:
+            result = self.func(**func_kwargs)
 
         return self.write_executor_output(result)
 
