@@ -1,4 +1,15 @@
 FROM public.ecr.aws/docker/library/python:3.11.7-slim
 
+ENV AWS_ACCESS_KEY_ID=
+ENV AWS_SECRET_ACCESS_KEY=
+ENV AWS_SESSION_TOKEN=
+ENV REDSHIFT_DATABASE=
+ENV REDSHIFT_HOST=
+ENV REDSHIFT_IAM_ROLE=
+ENV REDSHIFT_PASSWORD=
+ENV REDSHIFT_PORT=
+ENV REDSHIFT_USER=
+ENV S3_BUCKET=
+
 ADD ./dist/kfp-2.4.0-py3-none-any.whl /kfp-2.4.0-py3-none-any.whl
 RUN pip install /kfp-2.4.0-py3-none-any.whl
