@@ -10,5 +10,8 @@ ENV PLATFORM_ID=kubeflow
 ENV REDSHIFT_PASSWORD=
 ENV REDSHIFT_USER=
 
-ADD ./dist/kfp-2.4.0-py3-none-any.whl /kfp-2.4.0-py3-none-any.whl
-RUN pip install /kfp-2.4.0-py3-none-any.whl
+ADD ./dist/kfp-2.4.0-py3-none-any.whl /opt/kfp-2.4.0-py3-none-any.whl
+RUN pip install /opt/kfp-2.4.0-py3-none-any.whl
+RUN rm -rf /opt/kfp-2.4.0-py3-none-any.whl
+
+RUN pip install pandas==2.2.0
