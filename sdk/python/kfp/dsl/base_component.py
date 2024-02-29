@@ -108,8 +108,8 @@ class BaseComponent(abc.ABC):
             component_task = pipeline_task.PipelineTask(
                 component_spec=self.component_spec,
                 args=task_inputs,
-                execute_locally=pipeline_context.Pipeline.get_default_pipeline() is
-                None,
+                execute_locally=pipeline_context.Pipeline.get_default_pipeline()
+                is None,
             )
             if isinstance(self.outputs, tuple):
                 component_task_ = []
@@ -139,8 +139,8 @@ class BaseComponent(abc.ABC):
             return pipeline_task.PipelineTask(
                 component_spec=self.component_spec,
                 args=task_inputs,
-                execute_locally=pipeline_context.Pipeline.get_default_pipeline() is
-                None,
+                execute_locally=pipeline_context.Pipeline.get_default_pipeline()
+                is None,
             )
 
     @property

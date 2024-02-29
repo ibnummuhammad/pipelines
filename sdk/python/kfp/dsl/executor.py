@@ -46,15 +46,16 @@ class Executor:
             output_artifact_key = list(
                 self.executor_input["outputs"]["artifacts"].keys()
             )[0]
-            self.executor_artifact_output_path = self.executor_input["outputs"]["artifacts"][
-                output_artifact_key
-            ]["artifacts"][0]["uri"]
+            self.executor_artifact_output_path = self.executor_input["outputs"][
+                "artifacts"
+            ][output_artifact_key]["artifacts"][0]["uri"]
         self.executor_output_path = self.executor_input["outputs"]["outputFile"]
 
         # drop executor_output.json part from the outputFile path
         if self.executor_artifact_output_path:
             artifact_types.CONTAINER_TASK_ROOT = os.path.split(
-                self.executor_artifact_output_path)[0]
+                self.executor_artifact_output_path
+            )[0]
         else:
             artifact_types.CONTAINER_TASK_ROOT = os.path.split(
                 self.executor_output_path)[0]
@@ -220,7 +221,7 @@ class Executor:
         elif is_artifact(annotation_type):
             if isinstance(return_value, artifact_types.Artifact):
                 # for -> Artifact annotations, where the user returns an artifact
-                artifact_name = ''
+                artifact_name = ""
                 # users should not override the name for Vertex Pipelines
                 # if empty string, replace
                 # else provide descriptive warning and prefer letting backend throw exception
@@ -400,10 +401,16 @@ class Executor:
 
         result = self.func(**func_kwargs)
 
-        for output_i, output_name in enumerate(self.return_annotation.__annotations__):
+        for output_i, output_name in enumerate(
+            self.return_annotation.__annotations__
+        ):
             output_type = self.return_annotation.__annotations__[output_name]
 
-            if output_type != Dataset and len(list(self.return_annotation.__annotations__.values())) == 1:
+            if (
+                output_type != Dataset
+                and len(list(self.return_annotation.__annotations__.values()))
+                == 1
+            ):
                 self.result_list.append(result)
             elif output_type != Dataset:
                 self.result_list.append(result[output_i])
