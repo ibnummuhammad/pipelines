@@ -82,6 +82,9 @@ class BaseComponent(abc.ABC):
             if k not in self._component_inputs:
                 raise TypeError(
                     f'{self.name}() got an unexpected keyword argument "{k}".')
+            if isinstance(v, dict):
+                if "component_output" in v:
+                    v = v["component_output"]
             task_inputs[k] = v
 
         # Skip optional inputs and arguments typed as PipelineTaskFinalStatus.
@@ -98,12 +101,47 @@ class BaseComponent(abc.ABC):
                 f'{self.name}() missing {len(missing_arguments)} required '
                 f'{argument_or_arguments}: {arguments}.')
 
-        return pipeline_task.PipelineTask(
-            component_spec=self.component_spec,
-            args=task_inputs,
-            execute_locally=pipeline_context.Pipeline.get_default_pipeline() is
-            None,
-        )
+        # This self.outputs contain the return annotations of the component
+        # function. It will be used to convert component return type from
+        # pipeline_task.PipelineTask type to Artifact or Parameter Type
+        if self.outputs:
+            component_task = pipeline_task.PipelineTask(
+                component_spec=self.component_spec,
+                args=task_inputs,
+                execute_locally=pipeline_context.Pipeline.get_default_pipeline() is
+                None,
+            )
+            if isinstance(self.outputs, tuple):
+                component_task_ = []
+                for output in self.outputs:
+                    component_task_.append(component_task.outputs[output])
+                if len(component_task_) > 1:
+                    component_task_ = tuple(component_task_)
+                else:
+                    component_task_ = component_task_[0]
+            else:
+                component_task_ = component_task.output
+            output_tasks = []
+            if isinstance(component_task_, tuple):
+                for component_task__ in component_task_:
+                    output_task = {
+                        "component_output": component_task__,
+                        "pipeline_output": component_task,
+                    }
+                    output_tasks.append(output_task)
+            else:
+                output_tasks = {
+                    "component_output": component_task_,
+                    "pipeline_output": component_task,
+                }
+            return output_tasks
+        else:
+            return pipeline_task.PipelineTask(
+                component_spec=self.component_spec,
+                args=task_inputs,
+                execute_locally=pipeline_context.Pipeline.get_default_pipeline() is
+                None,
+            )
 
     @property
     def pipeline_spec(self) -> pipeline_spec_pb2.PipelineSpec:

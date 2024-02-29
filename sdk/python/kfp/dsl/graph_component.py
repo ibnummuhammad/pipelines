@@ -40,6 +40,7 @@ class GraphComponent(base_component.BaseComponent):
     ):
         super().__init__(component_spec=component_spec)
         self.pipeline_func = pipeline_func
+        self.outputs = None
 
         args_list = []
         signature = inspect.signature(pipeline_func)

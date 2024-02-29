@@ -39,12 +39,25 @@ class Executor:
         else:
             self.func = function_to_execute
 
+        self.executor_artifact_output_path = None
+
         self.executor_input = executor_input
-        self.executor_output_path = self.executor_input['outputs']['outputFile']
+        if self.executor_input["outputs"].get("artifacts"):
+            output_artifact_key = list(
+                self.executor_input["outputs"]["artifacts"].keys()
+            )[0]
+            self.executor_artifact_output_path = self.executor_input["outputs"]["artifacts"][
+                output_artifact_key
+            ]["artifacts"][0]["uri"]
+        self.executor_output_path = self.executor_input["outputs"]["outputFile"]
 
         # drop executor_output.json part from the outputFile path
-        artifact_types.CONTAINER_TASK_ROOT = os.path.split(
-            self.executor_output_path)[0]
+        if self.executor_artifact_output_path:
+            artifact_types.CONTAINER_TASK_ROOT = os.path.split(
+                self.executor_artifact_output_path)[0]
+        else:
+            artifact_types.CONTAINER_TASK_ROOT = os.path.split(
+                self.executor_output_path)[0]
 
         self.input_artifacts: Dict[str, Union[dsl.Artifact,
                                               List[dsl.Artifact]]] = {}
@@ -53,6 +66,8 @@ class Executor:
 
         self.return_annotation = inspect.signature(self.func).return_annotation
         self.excutor_output = {}
+
+        self.result_list = []
 
     def assign_input_and_output_artifacts(self) -> None:
         for name, artifacts in self.executor_input.get('inputs',
@@ -205,8 +220,7 @@ class Executor:
         elif is_artifact(annotation_type):
             if isinstance(return_value, artifact_types.Artifact):
                 # for -> Artifact annotations, where the user returns an artifact
-                artifact_name = self.executor_input['outputs']['artifacts'][
-                    output_name]['artifacts'][0]['name']
+                artifact_name = ''
                 # users should not override the name for Vertex Pipelines
                 # if empty string, replace
                 # else provide descriptive warning and prefer letting backend throw exception
@@ -251,19 +265,28 @@ class Executor:
                                                 self.return_annotation,
                                                 func_output)
             elif is_named_tuple(self.return_annotation):
-                if len(self.return_annotation._fields) != len(func_output):
-                    raise RuntimeError(
-                        f'Expected {len(self.return_annotation._fields)} return values from function `{self.func.__name__}`, got {len(func_output)}'
-                    )
-                for i in range(len(self.return_annotation._fields)):
-                    field = self.return_annotation._fields[i]
+                if len(self.return_annotation._fields) == 1 and not isinstance(
+                    func_output, tuple
+                ):
+                    field = self.return_annotation._fields[0]
                     field_type = self.return_annotation.__annotations__[field]
-                    if type(func_output) == tuple:
-                        field_value = func_output[i]
-                    else:
-                        field_value = getattr(func_output, field)
-                    self.handle_single_return_value(field, field_type,
-                                                    field_value)
+                    self.handle_single_return_value(
+                        field, field_type, func_output
+                    )
+                else:
+                    if len(self.return_annotation._fields) != len(func_output):
+                        raise RuntimeError(
+                            f'Expected {len(self.return_annotation._fields)} return values from function `{self.func.__name__}`, got {len(func_output)}'
+                        )
+                    for i in range(len(self.return_annotation._fields)):
+                        field = self.return_annotation._fields[i]
+                        field_type = self.return_annotation.__annotations__[field]
+                        if type(func_output) == tuple:
+                            field_value = func_output[i]
+                        else:
+                            field_value = getattr(func_output, field)
+                        self.handle_single_return_value(field, field_type,
+                                                        field_value)
             else:
                 raise RuntimeError(
                     f'Unknown return type: {self.return_annotation}. Must be one of `str`, `int`, `float`, a subclass of `Artifact`, or a NamedTuple collection of these types.'
@@ -307,6 +330,17 @@ class Executor:
         Returns:
             Optional[str]: Returns the location of the executor_output file as a string if the file is written. Else, None.
         """
+        from kfp.dsl import Dataset  # pylint: disable=C0415
+        from pandas import DataFrame  # pylint: disable=C0415
+
+        def convert_dataset_to_dataframe(
+            output_name: str, output_value: DataFrame
+        ):
+            output_value.to_csv(f"/tmp/{output_name}.csv", index=False)
+            output_dataset = Dataset(uri=dsl.get_uri(output_name))
+            os.rename(f"/tmp/{output_name}.csv", output_dataset.path)
+            self.result_list.append(output_dataset)
+
         annotations = inspect.getfullargspec(self.func).annotations
 
         # Function arguments.
@@ -358,7 +392,38 @@ class Executor:
             elif isinstance(v, type_annotations.InputPath):
                 func_kwargs[k] = self.get_input_artifact_path(k)
 
+        for k, v in func_kwargs.items():
+            if isinstance(v, Dataset):
+                import pandas as pd  # pylint: disable=C0415
+
+                func_kwargs[k] = pd.read_csv(v.path)
+
         result = self.func(**func_kwargs)
+
+        for output_i, output_name in enumerate(self.return_annotation.__annotations__):
+            output_type = self.return_annotation.__annotations__[output_name]
+
+            if output_type != Dataset and len(list(self.return_annotation.__annotations__.values())) == 1:
+                self.result_list.append(result)
+            elif output_type != Dataset:
+                self.result_list.append(result[output_i])
+            else:
+                if isinstance(result, tuple):
+                    convert_dataset_to_dataframe(
+                        output_name=output_name,
+                        output_value=result[output_i],
+                    )
+                else:
+                    convert_dataset_to_dataframe(
+                        output_name=output_name,
+                        output_value=result,
+                    )
+
+        if self.executor_input["outputs"].get("artifacts"):
+            result = tuple(self.result_list)
+        else:
+            result = self.func(**func_kwargs)
+
         return self.write_executor_output(result)
 
 

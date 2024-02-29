@@ -517,6 +517,7 @@ def create_component_from_func(
     output_component_file: Optional[str] = None,
     install_kfp_package: bool = True,
     kfp_package_path: Optional[str] = None,
+    outputs: Optional[tuple] = None,
 ) -> python_component.PythonComponent:
     """Implementation for the @component decorator.
 
@@ -584,7 +585,8 @@ def create_component_from_func(
         component_spec.save_to_component_yaml(output_component_file)
 
     return python_component.PythonComponent(
-        component_spec=component_spec, python_func=func)
+        component_spec=component_spec, python_func=func, outputs=outputs
+    )
 
 
 def make_input_for_parameterized_container_component_function(
