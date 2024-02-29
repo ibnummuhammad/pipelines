@@ -14,9 +14,11 @@ ADD ./dist/kfp-2.4.0-py3-none-any.whl /opt/kfp-2.4.0-py3-none-any.whl
 RUN pip install /opt/kfp-2.4.0-py3-none-any.whl
 RUN rm -rf /opt/kfp-2.4.0-py3-none-any.whl
 
-ADD ./dist_ml_pipeline/ml_pipeline-0.4.1-py3-none-any.whl /opt/ml_pipeline-0.4.1-py3-none-any.whl
-RUN pip install /opt/ml_pipeline-0.4.1-py3-none-any.whl
-RUN rm -rf /opt/ml_pipeline-0.4.1-py3-none-any.whl
+ADD ./dist_ml_pipeline/ml_pipeline-0.4.3-py3-none-any.whl /opt/ml_pipeline-0.4.3-py3-none-any.whl
+RUN pip install /opt/ml_pipeline-0.4.3-py3-none-any.whl
+RUN rm -rf /opt/ml_pipeline-0.4.3-py3-none-any.whl
 
-RUN pip install pandas==2.2.0
-RUN pip install boto3==1.34.49
+RUN pip install boto3==1.27.1
+RUN pip install pandas==2.2.1
+RUN pip install python-dotenv==1.0.1
+RUN pip install redshift-connector==2.1.0
