@@ -58,8 +58,8 @@ spec:
           name: mysql-persistent-storage
         resources:
             requests:
-              cpu: 100m
-              memory: 800Mi
+              cpu: 500m
+              memory: 2400Mi
       volumes:
       - name: mysql-persistent-storage
         persistentVolumeClaim:
