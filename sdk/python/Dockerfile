@@ -7,7 +7,6 @@ ENV REDSHIFT_IAM=
 ENV REDSHIFT_PASSWORD=
 ENV REDSHIFT_PORT=
 ENV REDSHIFT_USER=
-ENV S3_BUCKET=
 
 ADD ./dist/kfp-2.7.0-py3-none-any.whl /opt/kfp-2.7.0-py3-none-any.whl
 RUN pip install /opt/kfp-2.7.0-py3-none-any.whl
