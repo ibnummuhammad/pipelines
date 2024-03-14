@@ -156,6 +156,6 @@ spec:
           timeoutSeconds: 2
         resources:
           requests:
-            cpu: 250m
-            memory: 500Mi
+            cpu: 750m
+            memory: 1500Mi
       serviceAccountName: ml-pipeline
