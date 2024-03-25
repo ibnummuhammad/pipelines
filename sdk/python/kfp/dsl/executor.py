@@ -342,6 +342,14 @@ class Executor:
             os.rename(f"/tmp/{output_name}.csv", output_dataset.path)
             self.result_list.append(output_dataset)
 
+        def convert_dataset_to_parquet(
+            output_name: str, output_value: DataFrame
+        ):
+            output_value.to_parquet(f"/tmp/{output_name}.parquet", index=False)
+            output_dataset = Dataset(uri=dsl.get_uri(output_name))
+            os.rename(f"/tmp/{output_name}.parquet", output_dataset.path)
+            self.result_list.append(output_dataset)
+
         annotations = inspect.getfullargspec(self.func).annotations
 
         # Function arguments.
@@ -397,7 +405,7 @@ class Executor:
             if isinstance(v, Dataset):
                 import pandas as pd  # pylint: disable=C0415
 
-                func_kwargs[k] = pd.read_csv(v.path)
+                func_kwargs[k] = pd.read_parquet(v.path)
 
         result = self.func(**func_kwargs)
 
@@ -416,12 +424,12 @@ class Executor:
                 self.result_list.append(result[output_i])
             else:
                 if isinstance(result, tuple):
-                    convert_dataset_to_dataframe(
+                    convert_dataset_to_parquet(
                         output_name=output_name,
                         output_value=result[output_i],
                     )
                 else:
-                    convert_dataset_to_dataframe(
+                    convert_dataset_to_parquet(
                         output_name=output_name,
                         output_value=result,
                     )
