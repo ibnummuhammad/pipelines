@@ -4,11 +4,16 @@ metadata:
   labels:
     app: ml-pipeline-ui
   name: ml-pipeline-ui
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
 spec:
   ports:
   - name: http
     protocol: TCP
     port: 80
     targetPort: 3000
+  type: LoadBalancer
   selector:
     app: ml-pipeline-ui
