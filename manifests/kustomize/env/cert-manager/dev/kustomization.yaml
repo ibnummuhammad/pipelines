@@ -5,10 +5,6 @@ bases:
   - ../../dev
 namespace: kubeflow
 
-# Delete the cache deployer as we use the cert-manager instead 
-patchesStrategicMerge:
-  - ./delete-cache-deployer.yaml
-
 resources:
 - namespace.yaml
 
