@@ -28,20 +28,3 @@ vars:
     fieldpath: metadata.namespace
 configurations:
 - params.yaml
-
-# Pass proper arguments to cache-server to use cert-manager certificate
-patches:
-- patch: |-
-    - op: add
-      path: /spec/template/spec/containers/0/args/-
-      value: "--tls_cert_filename=tls.crt"
-  target:
-    kind: Deployment
-    name: cache-server
-- patch: |-
-    - op: add
-      path: /spec/template/spec/containers/0/args/-
-      value: "--tls_key_filename=tls.key"
-  target:
-    kind: Deployment
-    name: cache-server
