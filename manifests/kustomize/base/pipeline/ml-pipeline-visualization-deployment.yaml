@@ -48,6 +48,6 @@ spec:
           timeoutSeconds: 2
         resources:
             requests:
-              cpu: 300m
-              memory: 1500Mi
+              cpu: 30m
+              memory: 500Mi
       serviceAccountName: ml-pipeline-visualizationserver
