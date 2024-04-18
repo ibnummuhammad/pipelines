@@ -7,6 +7,9 @@ bases:
   - ../../third-party/argo/installs/namespace
   - ../../third-party/minio/base
 
+resources:
+  - ./aws-secrets
+
 # Identifier for application manager to apply ownerReference.
 # The ownerReference ensures the resources get garbage collected
 # when application is deleted.

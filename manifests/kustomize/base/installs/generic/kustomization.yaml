@@ -5,7 +5,6 @@ bases:
 - ../../pipeline
 resources:
 - pipeline-install-config.yaml
-- mysql-secret.yaml
 vars:
 - name: kfp-namespace
   objref:
