@@ -12,10 +12,10 @@ data:
     namespace: `kubectl rollout restart deployment -n <your-namespace>`.
   appName: pipeline
   appVersion: 2.1.0
-  dbHost: rds-kubeflow-ns47.cdlcgwqukrb0.ap-southeast-1.rds.amazonaws.com # relic to be removed after release
+  dbHost: saw-datahub-mex5-mysql.cdlcgwqukrb0.ap-southeast-1.rds.amazonaws.com # relic to be removed after release
   dbPort: "3306" # relic to be removed after release
   dbType: mysql
-  mysqlHost: rds-kubeflow-ns47.cdlcgwqukrb0.ap-southeast-1.rds.amazonaws.com
+  mysqlHost: saw-datahub-mex5-mysql.cdlcgwqukrb0.ap-southeast-1.rds.amazonaws.com
   mysqlPort: "3306"
   mlmdDb: kubeflow_metadb
   cacheDb: kubeflow_cachedb
