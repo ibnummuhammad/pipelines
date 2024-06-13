@@ -5,7 +5,6 @@ namespace: kubeflow
 
 resources:
 - ../../dev
-- ../base
 - namespace.yaml
 
 # NOTE: var name must be unique globally to allow composition of multiple kustomize
@@ -23,22 +22,3 @@ vars:
     name: ml-pipeline
 configurations:
 - params.yaml
-
-# Pass proper arguments to cache-server to use cert-manager certificate
-# Delete the cache deployer as we use the cert-manager instead 
-patches:
-- path: ./delete-cache-deployer.yaml
-- patch: |-
-    - op: add
-      path: /spec/template/spec/containers/0/args/-
-      value: "--tls_cert_filename=tls.crt"
-  target:
-    kind: Deployment
-    name: cache-server
-- patch: |-
-    - op: add
-      path: /spec/template/spec/containers/0/args/-
-      value: "--tls_key_filename=tls.key"
-  target:
-    kind: Deployment
-    name: cache-server
