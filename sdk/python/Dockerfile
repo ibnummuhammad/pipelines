@@ -12,9 +12,9 @@ ADD ./dist/kfp-2.7.0-py3-none-any.whl /opt/kfp-2.7.0-py3-none-any.whl
 RUN pip install /opt/kfp-2.7.0-py3-none-any.whl
 RUN rm -rf /opt/kfp-2.7.0-py3-none-any.whl
 
-ADD ./dist_ml_pipeline/ml_pipeline-1.0.0-py3-none-any.whl /opt/ml_pipeline-1.0.0-py3-none-any.whl
-RUN pip install /opt/ml_pipeline-1.0.0-py3-none-any.whl
-RUN rm -rf /opt/ml_pipeline-1.0.0-py3-none-any.whl
+ADD ./dist_ml_pipeline/ml_pipeline-1.1.0-py3-none-any.whl /opt/ml_pipeline-1.1.0-py3-none-any.whl
+RUN pip install /opt/ml_pipeline-1.1.0-py3-none-any.whl
+RUN rm -rf /opt/ml_pipeline-1.1.0-py3-none-any.whl
 
 RUN pip install boto3==1.27.1
 RUN pip install pandas==2.2.1
