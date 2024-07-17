@@ -88,6 +88,12 @@ There is a special type of unit test called [snapshot tests](https://jestjs.io/d
 snapshot tests are failing, you can update them automatically with `npm test -u` and run all tests. Then commit
 the snapshot changes.
 
+## How to build image
+
+```
+docker build . --file frontend/Dockerfile --tag ibnummuhammad/frontend:2.1.0
+```
+
 ## Production Build
 
 You can do `npm run build` to build the frontend code for production, which
