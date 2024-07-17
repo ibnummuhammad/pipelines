@@ -27,8 +27,7 @@ Finally, it is advised to install [pre-commit](https://pre-commit.com/) in order
 
 The API server image can be built from the root folder of the repo using:
 ```
-export API_SERVER_IMAGE=api_server
-docker build -f backend/Dockerfile . --tag $API_SERVER_IMAGE
+docker build --file backend/Dockerfile . --tag ibnummuhammad/api-server:2.1.0
 ```
 ## Deploy APIServer with the image you own build
 
