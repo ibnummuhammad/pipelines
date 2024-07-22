@@ -91,7 +91,7 @@ the snapshot changes.
 ## How to build image
 
 ```
-docker build . --file frontend/Dockerfile --tag ibnummuhammad/frontend:2.1.0
+docker build . --file frontend/Dockerfile --tag ibnummuhammad/frontend:2.1.0-v8
 ```
 
 ## Production Build

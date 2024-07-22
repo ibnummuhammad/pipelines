@@ -322,7 +322,37 @@ async function getLogsInfo(execution: Execution, runId?: string): Promise<Map<st
     logsInfo.set(LOGS_DETAILS, logsDetails);
   } catch (err) {
     let errMsg = await errorToMessage(err);
-    logsBannerMessage = 'Failed to retrieve pod logs.';
+
+    let url: string = "https://grafana.mon.tipnet.xyz/explore";
+    let datasource: string = "loki-core-staging-79yu";
+    let expr: string = `{namespace=\\"${podNameSpace}\\",pod=\\"${podName}\\"}|=\`\``;
+
+    let panesString: string = `
+      {
+        "ghd": {
+          "datasource": "${datasource}",
+          "queries": [
+            {
+              "refId": "A",
+              "expr": "${expr}",
+              "queryType": "range",
+              "datasource": { "type": "loki", "uid": "${datasource}" },
+              "editorMode": "builder"
+            }
+          ],
+          "range": { "from": "${execution.getCreateTimeSinceEpoch()}", "to": "${execution.getLastUpdateTimeSinceEpoch()}" }
+        }
+      }
+    `;
+    let panesJson: JSON = JSON.parse(panesString);
+    let panes: string = JSON.stringify(panesJson);
+
+    const grafanaUrl = new URL(url);
+    grafanaUrl.searchParams.append("schemaVersion", "1");
+    grafanaUrl.searchParams.append("panes", panes);
+    grafanaUrl.searchParams.append("orgId", "1");
+
+    logsBannerMessage = grafanaUrl.toString();
     logsInfo.set(LOGS_BANNER_MESSAGE, logsBannerMessage);
     logsBannerAdditionalInfo = 'Error response: ' + errMsg;
     logsInfo.set(LOGS_BANNER_ADDITIONAL_INFO, logsBannerAdditionalInfo);
