@@ -323,7 +323,7 @@ async function getLogsInfo(execution: Execution, runId?: string): Promise<Map<st
   } catch (err) {
     let errMsg = await errorToMessage(err);
 
-    let url: string = "https://grafana.mon.tipnet.xyz/explore";
+    let grafanaHost: string = "https://grafana.mon.tipnet.xyz/explore";
     let datasource: string = "loki-core-staging-79yu";
     let expr: string = `{namespace=\\"${podNameSpace}\\",pod=\\"${podName}\\"}|=\`\``;
 
@@ -347,7 +347,7 @@ async function getLogsInfo(execution: Execution, runId?: string): Promise<Map<st
     let panesJson: JSON = JSON.parse(panesString);
     let panes: string = JSON.stringify(panesJson);
 
-    const grafanaUrl = new URL(url);
+    const grafanaUrl = new URL(grafanaHost);
     grafanaUrl.searchParams.append("schemaVersion", "1");
     grafanaUrl.searchParams.append("panes", panes);
     grafanaUrl.searchParams.append("orgId", "1");
