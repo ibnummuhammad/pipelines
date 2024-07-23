@@ -327,6 +327,13 @@ async function getLogsInfo(execution: Execution, runId?: string): Promise<Map<st
     let datasource: string = "loki-core-staging-79yu";
     let expr: string = `{namespace=\\"${podNameSpace}\\",pod=\\"${podName}\\"}|=\`\``;
 
+    var dateFrom: Date = new Date(execution.getCreateTimeSinceEpoch());
+    dateFrom.setHours(dateFrom.getHours() - 1);
+    var rangeFrom = dateFrom.getTime();
+    var dateTo: Date = new Date(execution.getLastUpdateTimeSinceEpoch());
+    dateTo.setHours(dateTo.getHours() + 1);
+    var rangeTo = dateTo.getTime();
+
     let panesString: string = `
       {
         "ghd": {
@@ -340,7 +347,7 @@ async function getLogsInfo(execution: Execution, runId?: string): Promise<Map<st
               "editorMode": "builder"
             }
           ],
-          "range": { "from": "${execution.getCreateTimeSinceEpoch()}", "to": "${execution.getLastUpdateTimeSinceEpoch()}" }
+          "range": { "from": "${rangeFrom}", "to": "${rangeTo}" }
         }
       }
     `;
