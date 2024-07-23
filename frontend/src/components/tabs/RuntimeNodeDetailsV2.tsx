@@ -323,18 +323,18 @@ async function getLogsInfo(execution: Execution, runId?: string): Promise<Map<st
   } catch (err) {
     let errMsg = await errorToMessage(err);
 
-    let grafanaHost: string = "https://grafana.mon.tipnet.xyz/explore";
-    let datasource: string = "loki-core-staging-79yu";
-    let expr: string = `{namespace=\\"${podNameSpace}\\",pod=\\"${podName}\\"}|=\`\``;
+    const grafanaHost: string = "https://grafana.mon.tipnet.xyz/explore";
+    const datasource: string = "loki-core-staging-79yu";
+    const expr: string = `{namespace=\\"${podNameSpace}\\",pod=\\"${podName}\\"}|=\`\``;
 
-    var dateFrom: Date = new Date(execution.getCreateTimeSinceEpoch());
+    let dateFrom: Date = new Date(execution.getCreateTimeSinceEpoch());
     dateFrom.setHours(dateFrom.getHours() - 1);
-    var rangeFrom = dateFrom.getTime();
-    var dateTo: Date = new Date(execution.getLastUpdateTimeSinceEpoch());
+    const rangeFrom: number = dateFrom.getTime();
+    let dateTo: Date = new Date(execution.getLastUpdateTimeSinceEpoch());
     dateTo.setHours(dateTo.getHours() + 1);
-    var rangeTo = dateTo.getTime();
+    const rangeTo: number = dateTo.getTime();
 
-    let panesString: string = `
+    const panesString: string = `
       {
         "ghd": {
           "datasource": "${datasource}",
@@ -351,10 +351,10 @@ async function getLogsInfo(execution: Execution, runId?: string): Promise<Map<st
         }
       }
     `;
-    let panesJson: JSON = JSON.parse(panesString);
-    let panes: string = JSON.stringify(panesJson);
+    const panesJson: JSON = JSON.parse(panesString);
+    const panes: string = JSON.stringify(panesJson);
 
-    const grafanaUrl = new URL(grafanaHost);
+    const grafanaUrl: URL = new URL(grafanaHost);
     grafanaUrl.searchParams.append("schemaVersion", "1");
     grafanaUrl.searchParams.append("panes", panes);
     grafanaUrl.searchParams.append("orgId", "1");
