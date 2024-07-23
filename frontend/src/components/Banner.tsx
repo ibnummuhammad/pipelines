@@ -132,7 +132,6 @@ class Banner extends React.Component<BannerProps, BannerState> {
     }
 
     return (
-      <a href="{this.props.message}">
       <div
         className={classes(
           commonCss.flex,
@@ -141,10 +140,12 @@ class Banner extends React.Component<BannerProps, BannerState> {
           bannerModeCss.mode,
         )}
       >
+        <a href={this.props.message}>
         <div className={css.message}>
           {bannerIcon}
           {this.props.message}
         </div>
+        </a>
         <div className={commonCss.flex}>
           {showTroubleshootingGuideLink && (
             <a
@@ -184,7 +185,6 @@ class Banner extends React.Component<BannerProps, BannerState> {
           </Dialog>
         )}
       </div>
-      </a>
     );
   }
 
